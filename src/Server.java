@@ -96,16 +96,7 @@ public class Server {
         server.start();
     }
 
-    public void sendData(ObjectInputStream in, Socket socket) {
-        ObjectOutputStream out = null;
-        try {
-            out = new ObjectOutputStream(socket.getOutputStream());
-            out.writeObject(in);
-            out.flush();
-        } catch (IOException e) {
-            //nothing we can do if this happen
-        }
-    }
+
 
 
     public void stop() {

@@ -27,6 +27,7 @@ public class DDNS {
 
     //Start from the end of the domain and make it way down.
     public DNSRecord findDNSRecord(String name) {
+
         DNSRecord temp = null;
         //Keep reusing the same list to reduce the size of this search
         int index = 0;
@@ -60,7 +61,7 @@ public class DDNS {
         }
         temp = list[0];
         if (temp != null)
-            if (temp.getType() != DNSRecord.Type.A) // Only type A hold the IP for the domain
+            if (temp.getType() != DNSRecord.Type.A && temp.getType() != DNSRecord.Type.R ) // Only type A hold the IP for the domain
                 return findDNSRecord(temp.getValue());
             else return temp;
         return null;

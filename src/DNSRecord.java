@@ -29,7 +29,8 @@ public class DNSRecord {
         A(0),
         CName(1),
         NS(2),
-        MX(3);
+        MX(3),
+        R(4);
 
         int type;
 
