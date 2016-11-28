@@ -1,7 +1,9 @@
+import com.sun.net.httpserver.HttpHandler;
+import com.sun.net.httpserver.HttpServer;
+
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.net.*;
+import java.util.Map;
 
 /**
  * Created by Baheer.
@@ -24,7 +26,7 @@ public class Server {
             try {
                 serverSocket = new DatagramSocket(port);
             } catch (SocketException e) {
-                System.err.println("Can not created server on port " + port);
+                System.out.println(e);
                 return;
             }
 
@@ -33,11 +35,15 @@ public class Server {
                 byte[] receiveData = new byte[datasize];
                 DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
                 try {
+
+
                     serverSocket.receive(receivePacket);
                 } catch (IOException e) {// nothing we can do.
+                    System.out.println(e);
                 }
                 if (UDPPackets.size() > 100) // packet drop.
                     continue;
+
                 UDPPackets.push(receivePacket);
             }
 
@@ -47,7 +53,7 @@ public class Server {
         server = new Thread(() -> {
             final ServerProcess serverProcess1 = serverProcess;
             while (running) {
-                while (!serverSockets.isEmpty()) {
+                if (!UDPPackets.isEmpty()) {
                     DatagramPacket ptr = UDPPackets.pop();
                     if (ptr != null)
                         serverProcess1.process(ptr);
@@ -59,8 +65,24 @@ public class Server {
 
     }
 
+    public void setupHTTPServer(int port, Map<String, HttpHandler> httpHandler) {
+        HttpServer server = null;
+        try {
+            server = HttpServer.create(new InetSocketAddress(port), 0);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        for (String key : httpHandler.keySet()) {
+            server.createContext(key, httpHandler.get(key));
+        }
+        server.setExecutor(null); // creates a default executor
+        server.start();
+    }
+
+
     public void setupServerSocket(int port, ServerProcess<? extends Socket> serverProcess) {
         if (running) return;
+        running = true;
         listenThread = new Thread(() -> {
             ServerSocket serverSock = null;
             try {
@@ -95,8 +117,6 @@ public class Server {
         });
         server.start();
     }
-
-
 
 
     public void stop() {

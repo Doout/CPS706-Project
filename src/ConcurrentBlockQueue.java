@@ -3,11 +3,11 @@
  */
 public class ConcurrentBlockQueue<T> {
 
-    private Object[] items;
-    private boolean upSize;
-    private int index;
-    private int size;
-    private int maxSize;
+    private volatile Object[] items;
+    private volatile boolean upSize;
+    private volatile int index;
+    private volatile int size;
+    private volatile int maxSize;
 
     public ConcurrentBlockQueue(int initSize) {
         initSize = initSize + 1;
@@ -67,11 +67,11 @@ public class ConcurrentBlockQueue<T> {
         this.upSize = resizeAllow;
     }
 
-    public int size() {
+    public synchronized int size() {
         return size;
     }
 
-    public boolean isEmpty() {
+    public synchronized boolean isEmpty() {
         return size == 0;
     }
 
