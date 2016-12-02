@@ -1,0 +1,8 @@
+Port:40520
+her DNS: 141.117.232.20
+her CND: 141.117.232.24
+his DNS:141.117.232.30
+videoFilesName
+testVideo.mkv
+1.mkv
+2.mkv
