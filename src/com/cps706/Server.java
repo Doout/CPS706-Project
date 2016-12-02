@@ -1,3 +1,5 @@
+package com.cps706;
+
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 
@@ -15,14 +17,22 @@ public class Server {
     private Thread listenThread;
     private Thread server;
 
+    private volatile DatagramSocket serverSocket;
+
     private volatile ConcurrentBlockQueue<DatagramPacket> UDPPackets = new ConcurrentBlockQueue<>(100);
     private volatile ConcurrentBlockQueue<Socket> serverSockets = new ConcurrentBlockQueue<>(100);
+
+    /**
+     * This set up the UDP thread that receive and process UDP packet.
+     *
+     * @param port          The port in which this server is bound to
+     * @param serverProcess The process that will happen once an packet have been receive.
+     */
 
     public void setupUDP(final int port, ServerProcess<? extends DatagramPacket> serverProcess) {
         if (running) return;
         running = true;
         listenThread = new Thread(() -> {
-            DatagramSocket serverSocket;
             try {
                 serverSocket = new DatagramSocket(port);
             } catch (SocketException e) {
@@ -35,12 +45,11 @@ public class Server {
                 byte[] receiveData = new byte[datasize];
                 DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
                 try {
-
-
                     serverSocket.receive(receivePacket);
                 } catch (IOException e) {// nothing we can do.
                     System.out.println(e);
                 }
+
                 if (UDPPackets.size() > 100) // packet drop.
                     continue;
 
@@ -56,7 +65,11 @@ public class Server {
                 if (!UDPPackets.isEmpty()) {
                     DatagramPacket ptr = UDPPackets.pop();
                     if (ptr != null)
-                        serverProcess1.process(ptr);
+                        try {
+                            serverProcess1.process(ptr);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                 }
             }
 
@@ -65,6 +78,10 @@ public class Server {
 
     }
 
+    /**
+     * @param port        The port that his is bound to
+     * @param httpHandler The map of the site and events that follow if an user request it.
+     */
     public void setupHTTPServer(int port, Map<String, HttpHandler> httpHandler) {
         HttpServer server = null;
         try {
@@ -78,6 +95,13 @@ public class Server {
         server.setExecutor(null); // creates a default executor
         server.start();
     }
+
+    /**
+     * This set up a TCP thread in which it receive and process packets.
+     *
+     * @param port          The port in which this TCP server is bound to
+     * @param serverProcess The proecess that happen once a TCP packet have been receive
+     */
 
 
     public void setupServerSocket(int port, ServerProcess<? extends Socket> serverProcess) {
@@ -110,7 +134,11 @@ public class Server {
                 while (!serverSockets.isEmpty()) {
                     Socket ptr = serverSockets.pop();
                     if (ptr != null)
-                        serverProcess1.process(ptr);
+                        try {
+                            serverProcess1.process(ptr);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                 }
             }
 

@@ -1,3 +1,5 @@
+package com.cps706.DDNS;
+
 import java.util.ArrayList;
 
 /**
@@ -26,6 +28,12 @@ public class DDNS {
     }
 
     //Start from the end of the domain and make it way down.
+
+    /**
+     * Find the best match with the name given.
+     *
+     * @param name The Host in which to find the IP for
+     */
     public DNSRecord findDNSRecord(String name) {
 
         DNSRecord temp = null;
@@ -40,7 +48,7 @@ public class DDNS {
 
         DNSRecord[] list = table.toArray(new DNSRecord[size]);
 
-   //Try to redues the number of check.
+        //Try to redues the number of check.
         while (size != 1 && numberOfTry < 20 && namePartToAdd > 0) {
             for (int i = 0; i < size; i++) {
                 if (list[i].getName().endsWith(find)) {
@@ -61,7 +69,7 @@ public class DDNS {
         }
         temp = list[0];
         if (temp != null)
-            if (temp.getType() != DNSRecord.Type.A && temp.getType() != DNSRecord.Type.R ) // Only type A hold the IP for the domain
+            if (temp.getType() != DNSType.A && temp.getType() != DNSType.R) // Only type A hold the IP for the domain
                 return findDNSRecord(temp.getValue());
             else return temp;
         return null;
